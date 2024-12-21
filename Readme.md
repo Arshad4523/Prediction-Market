@@ -1,96 +1,39 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+# Prediction Market
 
-contract PredictionMarket {
+## Project Title
+Prediction Market
 
-    address public owner;
-    uint256 public predictionCount;
+## Project Description
+The Prediction Market contract allows users to participate in decentralized prediction markets, where they can place bets on the outcome of a question. Once the prediction period ends, the owner resolves the prediction, and users who placed correct bets can claim rewards based on the pool of bets.
 
-    struct Prediction {
-        string question;
-        uint256 closingTime;
-        uint256 outcome;  // 0 for undecided, 1 for correct, 2 for incorrect
-        uint256 totalAmount;
-        mapping(address => uint256) bets;
-    }
 
-    // Mapping for predictions by ID
-    mapping(uint256 => Prediction) public predictions;
+## Contract Address
+0xd5B2438c73c1d3eE0F637749e164dA1F3A3aEE3f
 
-    event PredictionCreated(uint256 predictionId, string question, uint256 closingTime);
-    event BetPlaced(uint256 predictionId, address bettor, uint256 amount);
-    event PredictionResolved(uint256 predictionId, uint256 outcome);
-    event RewardClaimed(uint256 predictionId, address claimant, uint256 amount);
+## Project Vision
+The vision of the Prediction Market is to create an open platform where users can make predictions on various events and earn rewards based on the accuracy of their bets. The goal is to provide a transparent, decentralized, and automated system where individuals can predict real-world outcomes, from sports events to political elections, and engage in decentralized finance (DeFi) activities.
 
-    constructor() {
-        owner = msg.sender;
-        predictionCount = 0;
-    }
+## Key Features
+- **Create Predictions**: The owner can create new prediction markets, specifying the question and closing time for betting.
+- **Place Bets**: Users can place bets on ongoing predictions with Ether.
+- **Resolve Predictions**: The owner can resolve predictions, determining the outcome and distributing rewards accordingly.
+- **Claim Rewards**: Users can claim their rewards after a prediction is resolved, based on their bet and the total pool.
+- **Transparency**: All bets, outcomes, and claims are tracked on the Ethereum blockchain, ensuring transparency and trust.
+- **Security**: The contract is designed with safety in mind, with checks to ensure that betting only occurs within the allowed time and only the owner can resolve predictions.
+- **No Oracle Required**: The owner determines the outcome, which eliminates the need for third-party oracles, though this can be modified if required.
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only the owner can perform this action");
-        _;
-    }
+## How to Use
+1. **Deploy the Contract**: Deploy the contract to an Ethereum network.
+2. **Create a Prediction**: Use the `createPrediction` function to create a new market with a question and closing time.
+3. **Place Bets**: Participants can place bets by calling the `placeBet` function and sending Ether.
+4. **Resolve the Prediction**: After the prediction closes, the owner can call `resolvePrediction` to set the outcome.
+5. **Claim Rewards**: After resolution, users can claim their rewards using the `claimReward` function.
 
-    // Function to create a new prediction market
-    function createPrediction(string memory _question, uint256 _closingTime) public onlyOwner {
-        predictions[predictionCount].question = _question;
-        predictions[predictionCount].closingTime = _closingTime;
-        predictions[predictionCount].outcome = 0; // Outcome undecided initially
-        predictions[predictionCount].totalAmount = 0;
+## Future Improvements
+- **Oracle Integration**: Integrate oracles to fetch real-world data automatically for resolving predictions.
+- **Multiple Outcomes**: Allow multiple possible outcomes for predictions instead of a binary result.
+- **User Interface**: Develop a frontend interface to interact with the contract more easily.
+- **Staking Mechanism**: Introduce staking to increase engagement and add additional layers of incentives.
 
-        emit PredictionCreated(predictionCount, _question, _closingTime);
-        predictionCount++;
-    }
 
-    // Function to place a bet on a prediction
-    function placeBet(uint256 predictionId) public payable {
-        require(block.timestamp < predictions[predictionId].closingTime, "Betting period has ended.");
-        require(msg.value > 0, "You must place a positive bet.");
 
-        predictions[predictionId].bets[msg.sender] += msg.value;
-        predictions[predictionId].totalAmount += msg.value;
-
-        emit BetPlaced(predictionId, msg.sender, msg.value);
-    }
-
-    // Function to resolve the prediction (only callable by the owner)
-    function resolvePrediction(uint256 predictionId, uint256 _outcome) public onlyOwner {
-        require(block.timestamp >= predictions[predictionId].closingTime, "Prediction is still ongoing.");
-        require(predictions[predictionId].outcome == 0, "Prediction has already been resolved.");
-
-        predictions[predictionId].outcome = _outcome;
-
-        emit PredictionResolved(predictionId, _outcome);
-    }
-
-    // Function to claim rewards after prediction resolution
-    function claimReward(uint256 predictionId) public {
-        require(predictions[predictionId].outcome != 0, "Prediction has not been resolved.");
-        require(predictions[predictionId].bets[msg.sender] > 0, "You didn't place a bet on this prediction.");
-
-        uint256 betAmount = predictions[predictionId].bets[msg.sender];
-        uint256 reward = 0;
-
-        if (predictions[predictionId].outcome == 1) {
-            // Winner gets their portion of the total pool
-            reward = (betAmount * predictions[predictionId].totalAmount) / address(this).balance;
-            payable(msg.sender).transfer(reward);
-        }
-
-        // Reset the bet for the player
-        predictions[predictionId].bets[msg.sender] = 0;
-
-        emit RewardClaimed(predictionId, msg.sender, reward);
-    }
-
-    // Function to view prediction details
-    function getPrediction(uint256 predictionId) public view returns (string memory, uint256, uint256, uint256) {
-        return (
-            predictions[predictionId].question,
-            predictions[predictionId].closingTime,
-            predictions[predictionId].totalAmount,
-            predictions[predictionId].outcome
-        );
-    }
-}

@@ -9,6 +9,8 @@ The Prediction Market contract allows users to participate in decentralized pred
 
 ## Contract Address
 0xd5B2438c73c1d3eE0F637749e164dA1F3A3aEE3f
+![image](https://github.com/user-attachments/assets/5d19c826-64a7-4fcf-9d04-47d28b662610)
+
 
 ## Project Vision
 The vision of the Prediction Market is to create an open platform where users can make predictions on various events and earn rewards based on the accuracy of their bets. The goal is to provide a transparent, decentralized, and automated system where individuals can predict real-world outcomes, from sports events to political elections, and engage in decentralized finance (DeFi) activities.
